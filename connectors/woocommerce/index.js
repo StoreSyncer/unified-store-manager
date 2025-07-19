@@ -1,0 +1,22 @@
+// WooCommerce Connector (Minimal Example)
+// TODO: Replace with your actual WooCommerce API credentials
+const WOOCOMMERCE_CONSUMER_KEY = process.env.WOOCOMMERCE_CONSUMER_KEY;
+const WOOCOMMERCE_CONSUMER_SECRET = process.env.WOOCOMMERCE_CONSUMER_SECRET;
+
+module.exports = function register(eventBus) {
+  eventBus.on('product.sync', async (payload) => {
+    // TODO: Fetch products from WooCommerce and return in standard format
+  });
+  eventBus.on('order.update', async (payload) => {
+    // TODO: Handle order updates for WooCommerce
+  });
+  eventBus.on('store.authenticate', async (payload) => {
+    // Step 1: Collect WooCommerce API consumer key and secret from user
+    // Step 2: Store API keys securely (DB, env, etc.)
+    // Step 3: Use API keys for authenticated requests
+    //
+    // Placeholder: Log the payload for now
+    console.log('WooCommerce authenticate event received:', payload);
+    // TODO: Implement API key authentication flow
+  });
+}; 
