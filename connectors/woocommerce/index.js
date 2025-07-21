@@ -1,11 +1,22 @@
 // WooCommerce Connector (Minimal Example)
 // TODO: Replace with your actual WooCommerce API credentials
+import wooCommerceClient from './client';
+
 const WOOCOMMERCE_CONSUMER_KEY = process.env.WOOCOMMERCE_CONSUMER_KEY;
 const WOOCOMMERCE_CONSUMER_SECRET = process.env.WOOCOMMERCE_CONSUMER_SECRET;
 
 module.exports = function register(eventBus) {
   eventBus.on('product.sync', async (payload) => {
-    // TODO: Fetch products from WooCommerce and return in standard format
+    try {
+      // In a real app, get these from your database
+      const { url, consumerKey, consumerSecret } = payload;
+      const api = wooCommerceClient(url, consumerKey, consumerSecret);
+      const response = await api.get("products");
+      console.log('WooCommerce products:', response.data);
+      // TODO: Map to standard format and return
+    } catch (error) {
+      console.error('Failed to sync WooCommerce products:', error);
+    }
   });
   eventBus.on('order.update', async (payload) => {
     // TODO: Handle order updates for WooCommerce

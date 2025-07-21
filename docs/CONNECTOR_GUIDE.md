@@ -1,82 +1,77 @@
 # Connector Development Guide
 
-Welcome to the Unified Store Manager Connector Development Guide!
+Welcome to the Unified Store Manager Connector Development Guide! This guide will help you create new store integrations (connectors) for our platform.
 
-This guide will help you create new store integrations (connectors) using our event-based, modular architecture.
+## 🧩 Core Concepts
 
----
+- **Event-Based Architecture**: Connectors are built around an event-driven model. The core system emits events (e.g., `product.sync`), and your connector listens for these events to perform actions.
+- **Standardized Data Models**: To ensure a consistent experience, all data returned by a connector (e.g., products, orders) must be mapped to a standard format.
+- **Modular & Decoupled**: Each connector is a self-contained module, completely decoupled from the core system and other connectors.
 
-## 🧩 Connector Architecture Overview
+## 🚀 Getting Started
 
-- **Event-Based:** All core actions (sync, update, error, etc.) are triggered and handled via events. Your connector listens for and emits events to interact with the system.
-- **Modular:** Each connector is a self-contained module in the `connectors/` directory.
-- **Standard Interface:** Implement required event handlers and methods for products, orders, inventory, and authentication.
+1.  **Create a New Directory**: Inside the `connectors/` directory, create a new folder for your connector (e.g., `connectors/my-new-store/`).
+2.  **Implement the Connector**: Create an `index.js` (or `.ts`) file and implement the required event handlers.
+3.  **Register Your Connector**: The system will auto-discover your connector. No manual registration is needed.
 
----
+## 📝 Example: A Simple Product Connector
 
-## 📁 Directory Structure
+```javascript
+// connectors/my-new-store/index.js
 
-```
-connectors/
-  ├── shopify/
-  ├── woocommerce/
-  ├── template/   # Use this as a starting point
-  └── ...
-```
-
----
-
-## 🚦 Required Steps to Add a Connector
-
-1. **Copy the Template:**
-   - Duplicate `connectors/template/` to `connectors/your-store/`.
-2. **Implement Event Handlers:**
-   - Implement functions like `onProductSync`, `onOrderUpdate`, `onInventoryChange`, etc.
-   - Use the provided event bus to listen for and emit events.
-3. **Register Your Connector:**
-   - Export your connector module so it is auto-discovered by the system.
-4. **Test Your Connector:**
-   - Write unit and integration tests for your connector logic.
-5. **Document Any Platform-Specific Details:**
-   - Add a `README.md` in your connector folder if needed.
-6. **Submit a Pull Request:**
-   - Ensure your code follows project style and passes all tests.
-
----
-
-## 📝 Example: Minimal Connector (Pseudo-code)
-
-```js
-// connectors/template/index.js
+// This function will be called by the core system
 module.exports = function register(eventBus) {
+  // Listen for the 'product.sync' event
   eventBus.on('product.sync', async (payload) => {
-    // Fetch products from your store and return in standard format
+    try {
+      // 1. Fetch data from your store's API
+      const externalProducts = await fetchFromMyStoreAPI();
+
+      // 2. Map the data to our standard format
+      const standardizedProducts = externalProducts.map(product => ({
+        id: product.sku,
+        name: product.product_name,
+        price: product.list_price,
+        // ... other fields
+      }));
+
+      // 3. Emit an event with the standardized data
+      eventBus.emit('product.synced', standardizedProducts);
+
+    } catch (error) {
+      // Handle errors and emit an error event
+      eventBus.emit('sync.error', { connector: 'my-new-store', error });
+    }
   });
-  eventBus.on('order.update', async (payload) => {
-    // Handle order updates
-  });
-  // ... more event handlers ...
+
+  // Implement other event handlers (e.g., for orders) here
 };
 ```
 
----
+## 📊 Data Mapping & Standardization
 
-## 📚 Reference: Standard Events
+All data must be mapped to our internal standard models. Here are the basic schemas:
 
-- `product.sync`
-- `order.update`
-- `inventory.change`
-- `store.authenticate`
-- `sync.error`
-- ...and more (see core event definitions)
+**Product:**
 
----
+| Field    | Type   | Description                |
+| :------- | :----- | :------------------------- |
+| `id`     | String | Unique identifier          |
+| `name`   | String | Product name               |
+| `price`  | Number | Price of the product       |
+| `stock`  | Number | Available stock quantity   |
 
-## 🤝 Need Help?
+**Order:**
 
-- Join our [Discussions](https://github.com/StoreSyncer/unified-store-manager/discussions)
-- Open an issue or PR for feedback
+| Field      | Type   | Description                |
+| :--------- | :----- | :------------------------- |
+| `id`       | String | Unique identifier          |
+| `customer` | String | Customer name              |
+| `total`    | Number | Total order value          |
+| `status`   | String | e.g., 'Fulfilled', 'Pending' |
 
----
+## 🤝 Contribution
 
-Happy coding! 
+Once your connector is ready, please submit a pull request. We'll review it and work with you to get it merged.
+
+Thank you for contributing to the Unified Store Manager! 

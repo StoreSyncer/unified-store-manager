@@ -1,6 +1,45 @@
-import React from "react";
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+
+interface Stats {
+  stores: number;
+  products: number;
+  orders: number;
+}
 
 export default function Home() {
+  const [stats, setStats] = useState<Stats>({ stores: 0, products: 0, orders: 0 });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        const [storesRes, productsRes, ordersRes] = await Promise.all([
+          fetch('/api/stores'),
+          fetch('/api/products'),
+          fetch('/api/orders'),
+        ]);
+        const [storesData, productsData, ordersData] = await Promise.all([
+          storesRes.json(),
+          productsRes.json(),
+          ordersRes.json(),
+        ]);
+        setStats({
+          stores: storesData.length,
+          products: productsData.length,
+          orders: ordersData.length,
+        });
+      } catch (error) {
+        console.error('Failed to fetch stats', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchStats();
+  }, []);
+
   return (
     <div className="flex flex-col gap-8">
       {/* Welcome Banner */}
@@ -10,23 +49,24 @@ export default function Home() {
           <p className="text-blue-700">Manage all your stores, products, and orders from one dashboard.</p>
         </div>
         <div className="flex gap-2">
-          <button className="bg-blue-600 text-white px-4 py-2 rounded font-medium hover:bg-blue-700 transition">Add Store</button>
-          <button className="bg-white border border-blue-600 text-blue-600 px-4 py-2 rounded font-medium hover:bg-blue-50 transition">View Stores</button>
+          <Link href="/stores" className="bg-blue-600 text-white px-4 py-2 rounded font-medium hover:bg-blue-700 transition">
+            Add Store
+          </Link>
         </div>
       </div>
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <div className="bg-white rounded-lg shadow p-5 flex flex-col items-center">
-          <div className="text-3xl font-bold text-blue-600">0</div>
+          <div className="text-3xl font-bold text-blue-600">{loading ? '...' : stats.stores}</div>
           <div className="text-gray-600 mt-2">Stores Connected</div>
         </div>
         <div className="bg-white rounded-lg shadow p-5 flex flex-col items-center">
-          <div className="text-3xl font-bold text-green-600">0</div>
+          <div className="text-3xl font-bold text-green-600">{loading ? '...' : stats.products}</div>
           <div className="text-gray-600 mt-2">Products Synced</div>
         </div>
         <div className="bg-white rounded-lg shadow p-5 flex flex-col items-center">
-          <div className="text-3xl font-bold text-purple-600">0</div>
+          <div className="text-3xl font-bold text-purple-600">{loading ? '...' : stats.orders}</div>
           <div className="text-gray-600 mt-2">Orders Managed</div>
         </div>
       </div>
@@ -44,9 +84,9 @@ export default function Home() {
         <div className="bg-white rounded-lg shadow p-5">
           <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
           <ul className="space-y-2">
-            <li><button className="w-full text-left px-3 py-2 rounded hover:bg-blue-50 transition">+ Add a new store</button></li>
-            <li><button className="w-full text-left px-3 py-2 rounded hover:bg-blue-50 transition">Sync all products</button></li>
-            <li><button className="w-full text-left px-3 py-2 rounded hover:bg-blue-50 transition">View all orders</button></li>
+            <li><Link href="/stores/add" className="block w-full text-left px-3 py-2 rounded hover:bg-blue-50 transition">+ Add a new store</Link></li>
+            <li><Link href="/products" className="block w-full text-left px-3 py-2 rounded hover:bg-blue-50 transition">Sync all products</Link></li>
+            <li><Link href="/orders" className="block w-full text-left px-3 py-2 rounded hover:bg-blue-50 transition">View all orders</Link></li>
           </ul>
         </div>
       </div>

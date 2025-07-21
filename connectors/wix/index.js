@@ -1,3 +1,5 @@
+import wixClient from './client';
+
 // Wix Connector (Minimal Example)
 // TODO: Replace with your actual Wix app credentials
 const WIX_CLIENT_ID = process.env.WIX_CLIENT_ID;
@@ -6,7 +8,18 @@ const WIX_REDIRECT_URI = process.env.WIX_REDIRECT_URI;
 
 module.exports = function register(eventBus) {
   eventBus.on('product.sync', async (payload) => {
-    // TODO: Fetch products from Wix and return in standard format
+    try {
+      // In a real app, you would get the access token from your database
+      wixClient.auth.setTokens({
+        accessToken: { value: 'your-wix-access-token', expiresAt: 9999999999999 },
+        refreshToken: { value: 'your-wix-refresh-token' },
+      });
+      const response = await wixClient.products.queryProducts().find();
+      console.log('Wix products:', response);
+      // TODO: Map to standard format and return
+    } catch (error) {
+      console.error('Failed to sync Wix products:', error);
+    }
   });
   eventBus.on('order.update', async (payload) => {
     // TODO: Handle order updates for Wix
